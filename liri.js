@@ -3,13 +3,17 @@ const fs = require(`fs`);
 const axios = require(`axios`);
 const moment = require(`moment`);
 const Spotify = require(`node-spotify-api`);
-const keys = require(`./keys.js`);
+const spotify = new Spotify({
+  id: process.env.SPOTIFY_ID,
+  secret: process.env.SPOTIFY_SECRET,
+})
+// const keys = require(`./keys.js`);
 
 const [, , command, ...searchObject] = process.argv
 let searchTerm = searchObject.join(``)
 
-const concertSearch = searchObject => {
-  axios.get(`https://rest.bandsintown.com/artists/${searchTerm}/events?app_id=codingbootcamp`)
+const concertSearch = search => {
+  axios.get(`https://rest.bandsintown.com/artists/${search}/events?app_id=codingbootcamp`)
     .then(r => {
       if (r.data[0] === undefined) {
         console.log(`${searchTerm} has no upcoming shows :(`)
@@ -27,13 +31,13 @@ const concertSearch = searchObject => {
     .catch(e => console.log(e))
 }
 
-// const spotifySearch = searchObject => {
-//   axios.get(`https://api.spotify.com/v1/search?q=track:${searchObject}&type=track&limit=10`)
-//     .then(r => {
-//       console.log(`success`)
-//     })
-//     .catch(e => console.error(e))
-// }
+const spotifySearch = searchObject => {
+  axios.get(`https://api.spotify.com/v1/search?q=track:${searchObject}&type=track&limit=10`)
+    .then(r => {
+      console.log(`success`)
+    })
+    .catch(e => console.error(e))
+}
 
 const omdbSearch = searchObject => {
   if (searchObject[0] === undefined) {
@@ -74,13 +78,13 @@ const omdbSearch = searchObject => {
 
 const doIt = () => {
   fs.readFile(`random.txt`, `utf8`, (e, data) => {
-    let newArr = data.split(`,`)
+    let newArr = (data.split(`,`))
     let [command, searchObject] = newArr
     switch (command) {
       case `concert-this`:
         let searchArr = searchObject.split(`, `)
-        searchTerm = searchArr.join(``)
-        concertSearch(searchTerm)
+        newTerm = searchArr.join(``)
+        concertSearch(newTerm)
         break
       // case `spotify-this-song`:
       //   spotifySearch(searchObject)
@@ -97,7 +101,7 @@ const doIt = () => {
 
 switch (command) {
   case `concert-this`:
-    concertSearch(searchObject)
+    concertSearch(searchTerm)
     break
   // case `spotify-this-song`:
   //   spotifySearch(searchObject)
